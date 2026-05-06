@@ -1,0 +1,24 @@
+# scene.txt – Escena de ejemplo para el ray tracer serial.
+#
+# Formato de cada esfera:
+#   sphere  cx  cy  cz  radio  R  G  B  reflectividad  shininess
+#
+# Coordenadas de la habitación:
+#   x ∈ [-3.0, 3.0]   (paredes izquierda/derecha)
+#   y ∈ [-1.5, 2.5]   (piso/techo)
+#   z ∈ [-4.0, inf)     (pared del fondo / apertura delantera)
+#
+# Cámara: posición (0, 0.5, 3.8) apuntando hacia el origen, vfov = 55º.
+# Luz   : (0.5, 2.2, 0.5)
+
+# Esfera central grande – amarilla
+sphere   0.0  -0.5  -1.0   1.0   0.95  0.80  0.10   0.00    8
+
+# Esfera pequeña azul (izquierda)
+sphere  -1.8  -1.0  -2.0   0.5   0.10  0.25  0.90   0.00    8
+
+# Esfera pequeña roja (derecha)
+sphere   1.8  -1.0  -2.0   0.5   0.90  0.15  0.15   0.00    8
+
+# Esfera blanca (al fondo)
+sphere   0.0  -0.9  -3.2   0.6   0.95  0.95  0.95   0.00    8
