@@ -1,12 +1,12 @@
-// serial_pt.cpp - Path tracer serial de referencia.
+// omp_pt_sched.cpp - Path tracer paralelo con OpenMP y scheduling configurable.
 //
-// A diferencia de serial.cpp, la luz rebota entre superficies difusas: en cada
-// interseccion se elige una direccion aleatoria del hemisferio y se acumula la
-// luz que llega por ella (Monte Carlo). El promedio sobre N muestras converge a
-// la iluminacion global (color bleeding, sombras suaves, luz indirecta).
+// Permite experimentar con distintas estrategias de planificacion (static,
+// dynamic, guided) y valores de chunksize desde la linea de comandos.
 //
-// Uso: ./serial_pt <scene.txt> <output.ppm> [W H D N]
-//   N: caminos por pixel. Default: 64.
+// Uso: ./omp_pt_sched <scene.txt> <output.ppm> [W H D N] <threads> <schedule> [chunksize]
+//   threads:   numero de threads OpenMP
+//   schedule:  static | dynamic | guided
+//   chunksize: tamano de chunk (opcional; 0 = default del runtime)
 
 #include "pt.hpp"
 #include <omp.h>
@@ -23,7 +23,8 @@ static omp_sched_t parse_schedule(const char* s) {
 
 int main(int argc, char* argv[]) {
     if (argc < 3) {
-        std::cerr << "Uso: " << argv[0] << " <scene.txt> <output.ppm> [W H D N] <threads> <schedule> [chunksize]\n";
+        std::cerr << "Uso: " << argv[0]
+                  << " <scene.txt> <output.ppm> [W H D N] <threads> <schedule> [chunksize]\n";
         return 1;
     }
 
@@ -35,9 +36,9 @@ int main(int argc, char* argv[]) {
     const int SAMPLES   = (argc > 6) ? std::stoi(argv[6]) : 64;
     const int THREADS   = (argc > 7) ? std::stoi(argv[7]) : omp_get_max_threads();
 
-    // argv[7] = "static"|"dynamic"|"guided", argv[8] = chunksize (opcional)
-    omp_sched_t SCHED = parse_schedule(argv[7]);
-    const int CHUNK = (argc > 8) ? atoi(argv[8]) : 0;
+    // argv[8] = "static"|"dynamic"|"guided", argv[9] = chunksize (opcional)
+    omp_sched_t SCHED = (argc > 8) ? parse_schedule(argv[8]) : omp_sched_static;
+    const int CHUNK    = (argc > 9) ? std::atoi(argv[9]) : 0;
 
     // Fija schedule en tiempo de ejecucion
     omp_set_schedule(SCHED, CHUNK);
@@ -48,9 +49,6 @@ int main(int argc, char* argv[]) {
     std::vector<Vec3> pixels(W * H);
     auto t0 = std::chrono::high_resolution_clock::now();
 
-    // Cada pixel lanza SAMPLES caminos y promedia. La semilla del RNG es funcion
-    // del indice del pixel: resultados deterministas y sin condiciones de carrera
-    // al paralelizar (cada thread tiene su propio estado de RNG).
     #pragma omp parallel for schedule(runtime) num_threads(THREADS)
     for (int j = 0; j < H; ++j)
         for (int i = 0; i < W; ++i) {
@@ -69,11 +67,14 @@ int main(int argc, char* argv[]) {
 
     save_ppm(output_file, pixels, W, H);
 
+    std::string sched_name = (argc > 8) ? std::string(argv[8]) : std::string("static");
     std::cerr << "Resolucion  : " << W << "x" << H << "\n"
               << "Prof. maxima: " << MAX_DEPTH << " rebotes\n"
               << "Muestras/px : " << SAMPLES << "\n"
               << "Rayos total : " << (long long)W*H*SAMPLES << "\n"
               << "Esferas     : " << sc.spheres.size() << "\n"
+              << "Threads     : " << THREADS << "\n"
+              << "Schedule    : " << sched_name << " chunk=" << CHUNK << "\n"
               << "Tiempo      : " << elapsed << " s\n"
               << "Imagen      : " << output_file << "\n";
 

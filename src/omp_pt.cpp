@@ -1,19 +1,18 @@
-// serial_pt.cpp - Path tracer serial de referencia.
+// omp_pt.cpp - Path tracer paralelo con OpenMP.
 //
-// A diferencia de serial.cpp, la luz rebota entre superficies difusas: en cada
-// interseccion se elige una direccion aleatoria del hemisferio y se acumula la
-// luz que llega por ella (Monte Carlo). El promedio sobre N muestras converge a
-// la iluminacion global (color bleeding, sombras suaves, luz indirecta).
+// Paraleliza el loop externo de pixeles con #pragma omp parallel for.
+// Cada thread tiene su propio RNG (semilla = indice de pixel) para evitar
+// condiciones de carrera.
 //
-// Uso: ./serial_pt <scene.txt> <output.ppm> [W H D N]
-//   N: caminos por pixel. Default: 64.
+// Uso: ./omp_pt <scene.txt> <output.ppm> [W H D N P]
+//   P: numero de threads. Default: omp_get_max_threads().
 
 #include "pt.hpp"
 #include <omp.h>
 
 int main(int argc, char* argv[]) {
     if (argc < 3) {
-        std::cerr << "Uso: " << argv[0] << " <scene.txt> <output.ppm> [W H D N]\n";
+        std::cerr << "Uso: " << argv[0] << " <scene.txt> <output.ppm> [W H D N P]\n";
         return 1;
     }
 
@@ -23,6 +22,7 @@ int main(int argc, char* argv[]) {
     const int H         = (argc > 4) ? std::stoi(argv[4]) : 600;
     const int MAX_DEPTH = (argc > 5) ? std::stoi(argv[5]) : 8;
     const int SAMPLES   = (argc > 6) ? std::stoi(argv[6]) : 64;
+    const int THREADS   = (argc > 7) ? std::stoi(argv[7]) : omp_get_max_threads();
 
     Scene  sc  = load_scene(scene_file);
     Camera cam({0, 0.5, 3.8}, {0, 0, 0}, {0, 1, 0}, 55.0, W, H);
@@ -33,7 +33,7 @@ int main(int argc, char* argv[]) {
     // Cada pixel lanza SAMPLES caminos y promedia. La semilla del RNG es funcion
     // del indice del pixel: resultados deterministas y sin condiciones de carrera
     // al paralelizar (cada thread tiene su propio estado de RNG).
-    #pragma omp parallel for schedule(static) num_threads(omp_get_max_threads())
+    #pragma omp parallel for schedule(static) num_threads(THREADS)
     for (int j = 0; j < H; ++j)
         for (int i = 0; i < W; ++i) {
             RNG  rng(static_cast<uint64_t>(j) * W + i + 1);
@@ -56,6 +56,7 @@ int main(int argc, char* argv[]) {
               << "Muestras/px : " << SAMPLES << "\n"
               << "Rayos total : " << (long long)W*H*SAMPLES << "\n"
               << "Esferas     : " << sc.spheres.size() << "\n"
+              << "Threads     : " << THREADS << "\n"
               << "Tiempo      : " << elapsed << " s\n"
               << "Imagen      : " << output_file << "\n";
 
