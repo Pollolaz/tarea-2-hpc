@@ -30,7 +30,7 @@ BEST_CHUNK = None       # ← cambiar (None → no se pasa arg)
 # ── Main ──────────────────────────────────────────────────────────────────────
 def main():
     if not BIN.exists():
-        print(f"ERROR: no se encontró {BIN}  →  compilar con: make omp_pt")
+        print(f"ERROR: no se encontró {BIN}  →  compilar con: make omp_pt_sched")
         return
 
     results = {}   # results[scene][cfg_name][str(p)] = segundos
@@ -43,7 +43,7 @@ def main():
 
         for W, H, S, N, cfg_name in CONFIGS:
             results[scene][cfg_name] = {}
-            print(f"\n  Config {cfg_name}: {W}x{H}  N={N}")
+            print(f"\n  Config {cfg_name}: {W}x{H}  S={S}  N={N}")
 
             for p in THREADS:
                 print(f"    p={p}", end="  ", flush=True)
