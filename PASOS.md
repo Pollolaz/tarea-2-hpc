@@ -455,3 +455,126 @@ sched_results = exp2_scheduling()
 # omp_results  = exp3_omp()
 # numba_results = exp4_numba()
 ```
+
+---
+
+## Comandos de testing manual
+
+Todos los comandos se ejecutan desde `src/`. Activar el entorno conda antes de correr Numba:
+
+```bash
+conda activate tarea2-hpc
+cd src/
+```
+
+### Compilar todo
+
+```bash
+make all
+# Genera: ./serial  ./serial_pt  ./omp_pt  ./omp_pt_sched
+```
+
+---
+
+### Serial
+
+```bash
+# Ray tracer serial
+./serial scene.txt output_rt.ppm 400 300 8 2
+
+# Path tracer serial (config small)
+./serial_pt scene.txt output_pt.ppm 400 300 8 32
+
+# Path tracer serial (config medium)
+./serial_pt scene.txt output_pt.ppm 800 600 8 128
+
+# Con scene_many (40 esferas)
+./serial_pt scene_many.txt output_pt_many.ppm 400 300 8 32
+```
+
+Formato de argumentos: `<scene> <output.ppm> <W> <H> <D> <N>`
+- `D` = profundidad máxima de rebotes
+- `N` = muestras por pixel (path tracing) / S de supersampling (ray tracing)
+
+---
+
+### OpenMP (`omp_pt`)
+
+```bash
+# 4 threads, config small
+./omp_pt scene.txt output_omp.ppm 400 300 8 32 4
+
+# 8 threads, config medium
+./omp_pt scene.txt output_omp.ppm 800 600 8 128 8
+
+# Alternativa: controlar threads por variable de entorno (sin pasar P)
+OMP_NUM_THREADS=4 ./omp_pt scene.txt output_omp.ppm 400 300 8 32
+```
+
+Formato: `<scene> <output.ppm> <W> <H> <D> <N> [P]`
+- `P` = número de threads (opcional, default: `OMP_NUM_THREADS` o todos los disponibles)
+
+---
+
+### OpenMP con scheduling (`omp_pt_sched`)
+
+```bash
+# static chunk=1, 4 threads
+./omp_pt_sched scene.txt output_sched.ppm 800 600 8 128 4 static 1
+
+# dynamic chunk=16, 4 threads
+./omp_pt_sched scene.txt output_sched.ppm 800 600 8 128 4 dynamic 16
+
+# guided (sin chunksize), 8 threads
+./omp_pt_sched scene.txt output_sched.ppm 800 600 8 128 8 guided
+
+# Con scene_many para comparar
+./omp_pt_sched scene_many.txt output_sched.ppm 800 600 8 128 4 dynamic 4
+```
+
+Formato: `<scene> <output.ppm> <W> <H> <D> <N> <P> <schedule> [chunksize]`
+- `schedule` = `static` | `dynamic` | `guided`
+- `chunksize` = opcional (si se omite, el runtime usa su default)
+
+---
+
+### Numba (`numba_pt.py`)
+
+```bash
+# 1 thread, config small (primer run incluye compilación JIT ~30s)
+NUMBA_NUM_THREADS=1 python numba_pt.py scene.txt output_numba.png 400 300 8 32
+
+# 4 threads, config medium
+NUMBA_NUM_THREADS=4 python numba_pt.py scene.txt output_numba.png 800 600 8 128
+
+# 8 threads, config large
+NUMBA_NUM_THREADS=8 python numba_pt.py scene.txt output_numba.png 1600 1200 8 256
+
+# Con scene_many
+NUMBA_NUM_THREADS=4 python numba_pt.py scene_many.txt output_numba.png 400 300 8 32
+```
+
+Formato: `<scene> <output.png> <W> <H> <D> <N>`
+- Threads se controla **solo** con `NUMBA_NUM_THREADS` (no es argumento posicional)
+- La primera ejecución siempre es lenta (~30s de JIT); el tiempo reportado excluye eso
+- La salida es `.png` (no `.ppm` como los binarios C++)
+
+> **Tip:** Para ver la imagen generada en cualquier formato:
+> ```bash
+> # Ver PPM (instalar imagemagick si no está)
+> display output_pt.ppm
+> # o convertir a PNG
+> convert output_pt.ppm output_pt.png
+> ```
+
+---
+
+### Verificar que las imágenes son razonablemente similares
+
+Una sanidad check rápida: correr serial y omp_pt con los mismos parámetros y comparar visualmente los PPM. No serán idénticos (RNG distinto por semilla), pero deben verse similares.
+
+```bash
+./serial_pt scene.txt ref_serial.ppm 400 300 8 32
+./omp_pt    scene.txt ref_omp.ppm    400 300 8 32 4
+NUMBA_NUM_THREADS=4 python numba_pt.py scene.txt ref_numba.png 400 300 8 32
+```
