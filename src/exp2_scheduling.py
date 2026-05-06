@@ -29,8 +29,8 @@ W, H, S, N, _ = CONFIGS[1]   # siempre config MEDIUM (800x600, N=128)
 # (schedule_name, lista_de_chunksizes)
 # None en chunksize → no se pasa el arg (guided lo ignora igual)
 STRATEGIES = [
-    ("static",  [1, 8, 32, 128]),
-    ("dynamic", [1, 8, 32, 128]),
+    ("static",  [1, 8, 32, 64, 128]),
+    ("dynamic", [1, 8, 32, 64, 128]),
     ("guided",  [None]),
 ]
 

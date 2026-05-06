@@ -23,7 +23,7 @@ from common import *
 
 # ── Ajustar según resultado de EXP-2 ─────────────────────────────────────────
 # Si usas omp_pt_sched en vez de omp_pt, cambia BIN y agrega BEST_SCHED/CHUNK a cmd.
-BIN        = SRC / "omp_pt"
+BIN        = SRC / "omp_pt_sched"   # o "omp_pt" si lo recompilaste con la mejor estrategia hardcodeada
 BEST_SCHED = "guided"   # ← cambiar según EXP-2
 BEST_CHUNK = None       # ← cambiar (None → no se pasa arg)
 
