@@ -1,0 +1,6 @@
+*.exe
+*.bin
+*.out
+*.dll
+*.so
+*.dylib
