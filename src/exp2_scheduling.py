@@ -34,7 +34,7 @@ STRATEGIES = [
     ("guided",  [None]),
 ]
 
-BIN = SRC / "omp_pt_sched"
+BIN = bin("omp_pt_sched")
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 def main():

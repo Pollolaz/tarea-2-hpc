@@ -28,14 +28,14 @@ def main():
 
             # ── Ray tracer serial ──────────────────────────────────────────
             print("    serial (ray tracing)...")
-            out, wall = run([SRC/"serial", scene, OUT/"out_serial.ppm", W, H, DEPTH, S])
+            out, wall = run([bin("serial"), scene, OUT/"out_serial.ppm", W, H, DEPTH, S])
             t = parse_time(out) or wall
             results[scene][cfg_name]["serial_rt"] = t
             print(f"    Tiempo medido: {t:.3f}s")
 
             # ── Path tracer serial ─────────────────────────────────────────
             print("    serial_pt (path tracing)...")
-            out, wall = run([SRC/"serial_pt", scene, OUT/"out_serial_pt.ppm", W, H, DEPTH, N])
+            out, wall = run([bin("serial_pt"), scene, OUT/"out_serial_pt.ppm", W, H, DEPTH, N])
             t = parse_time(out) or wall
             results[scene][cfg_name]["serial_pt"] = t
             print(f"    Tiempo medido: {t:.3f}s")

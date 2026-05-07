@@ -1,11 +1,18 @@
 # common.py — helpers compartidos por todos los scripts de experimento
-import subprocess, os, time, json, re
+import subprocess, os, sys, time, json, re
 from pathlib import Path
 
 # ── Rutas ────────────────────────────────────────────────────────────────────
 SRC = Path(__file__).parent          # directorio src/
 OUT = SRC / "resultados"
 OUT.mkdir(exist_ok=True)
+
+# ── Plataforma ────────────────────────────────────────────────────────────────
+IS_WINDOWS = sys.platform == "win32"
+
+def bin(name):
+    """Devuelve la ruta al binario compilado, con .exe en Windows."""
+    return SRC / (name + ".exe" if IS_WINDOWS else name)
 
 # ── Parámetros globales ───────────────────────────────────────────────────────
 SCENES  = ["scene.txt", "scene_many.txt"]

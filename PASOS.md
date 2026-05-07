@@ -15,18 +15,52 @@
 
 ## Fase 0 — Setup del entorno (hacer UNA VEZ por máquina)
 
+> **En Windows: correr TODO desde WSL.** Los binarios C++ son Linux ELF y no funcionan en Windows nativo.
+> Abrir una terminal WSL antes de cualquier paso.
+
+### 0a. WSL: navegar al proyecto y verificar compilador
+
 ```bash
-# Conda (Python + Numba)
+# El proyecto vive en el filesystem de Windows, accesible desde WSL en /mnt/c/
+cd /mnt/c/Users/nicol/OneDrive/Documents/GitHub/tarea-2-hpc
+
+# Verificar que g++ y OpenMP están disponibles
+g++ --version
+echo "#include <omp.h>" | g++ -fopenmp -x c++ - -o /dev/null && echo "OpenMP OK"
+
+# Si no están instalados:
+sudo apt update && sudo apt install -y g++ libomp-dev
+```
+
+### 0b. Conda dentro de WSL
+
+```bash
+# Si no tienes conda en WSL, instalarlo (Miniconda):
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+bash Miniconda3-latest-Linux-x86_64.sh -b -p ~/miniconda3
+~/miniconda3/bin/conda init bash
+source ~/.bashrc
+
+# Crear entorno y activarlo
 conda create -n tarea2-hpc python=3.12 -y
 conda activate tarea2-hpc
 conda install numpy numba matplotlib -y
+```
 
-# Compilar referencias seriales
-cd src/
-make serial serial_pt
+### 0c. Compilar binarios C++
+
+```bash
+conda activate tarea2-hpc
+cd /mnt/c/Users/nicol/OneDrive/Documents/GitHub/tarea-2-hpc/src
+make all
 ```
 
 > **Verificar** que `./serial` y `./serial_pt` corren sin errores antes de continuar.
+
+```bash
+./serial_pt scene.txt test.ppm 400 300 8 32
+# Debe imprimir: Tiempo : X.XX s
+```
 
 ---
 
@@ -214,7 +248,7 @@ def exp2_scheduling():
     save("exp2_scheduling", results)
     return results
 
-sched_results = exp2_scheduling()
+
 ```
 
 **Preguntas a responder:**
@@ -431,11 +465,15 @@ Día 5     → Revisión final + entrega Canvas
 ```bash
 cd src/
 
-# 1. Compilar todo
+# 1. Compilar todo en WSL
 make all
 
-# 2. Correr todos los experimentos (puede tardar varias horas)
-python experimentos.py
+# 2. Correr todos los experimentos en Anaconda (puede tardar varias horas)
+conda activate tarea2-hpc
+python exp1_baseline.py
+python exp2_scheduling.py
+python exp3_omp_scaling.py
+python exp4_numba_scaling.py
 
 # 3. Generar gráficos
 python graficos.py
@@ -446,14 +484,13 @@ python graficos.py
 #   fig_4esf_small.pdf, fig_4esf_medium.pdf, ...
 ```
 
-Para correr un solo experimento durante desarrollo, basta llamar la función directamente:
+Para correr un solo experimento durante desarrollo, ejecutar el script correspondiente:
 
-```python
-# al final de experimentos.py, comentar lo que no quieres correr
-# ts = exp1_serial()
-sched_results = exp2_scheduling()
-# omp_results  = exp3_omp()
-# numba_results = exp4_numba()
+```bash
+python exp1_baseline.py       # baseline serial  (~15-60 min)
+python exp2_scheduling.py     # scheduling OMP   (~2-4 horas)
+python exp3_omp_scaling.py    # escalabilidad OMP (~2-3 horas)
+python exp4_numba_scaling.py  # escalabilidad Numba (~1-2 horas)
 ```
 
 ---
