@@ -62,6 +62,32 @@ make all
 # Debe imprimir: Tiempo : X.XX s
 ```
 
+```bash
+# Instalar ImageMagick
+sudo apt install imagemagick
+
+# Convertir en imagen
+convert test.ppm test.png
+```
+
+```bash
+# Correr una instancia de cada algoritmo
+./serial scene.txt out_serial.ppm 800 600 8 4
+./serial_pt scene.txt out_serial_pt.ppm 800 600 8 64
+./omp_pt scene.txt out_omp_pt.ppm 800 600 8 64 4
+./omp_pt_sched scene.txt out_omp_sched.ppm 800 600 8 64 4
+# No implementado todavía
+python3 numba_pt.py scene.txt out_numba_pt.ppm 800 600 8 64 
+
+# Convertir en imagen
+convert out_serial.ppm out_serial.png 
+convert out_serial_pt.ppm out_serial_pt.png
+convert out_omp_pt.ppm out_omp_pt.png
+convert out_omp_sched.ppm out_omp_sched.png 
+# No implementado todavía
+convert out_numba_pt.ppm out_numba_pt.png
+```
+
 ---
 
 ## Fase 1 — Implementar el código (antes de correr experimentos)
