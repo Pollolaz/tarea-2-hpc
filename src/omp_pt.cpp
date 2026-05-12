@@ -33,7 +33,7 @@ int main(int argc, char* argv[]) {
     // Cada pixel lanza SAMPLES caminos y promedia. La semilla del RNG es funcion
     // del indice del pixel: resultados deterministas y sin condiciones de carrera
     // al paralelizar (cada thread tiene su propio estado de RNG).
-    #pragma omp parallel for schedule(static) num_threads(THREADS)
+    #pragma omp parallel for schedule(guided) num_threads(THREADS)
     for (int j = 0; j < H; ++j)
         for (int i = 0; i < W; ++i) {
             RNG  rng(static_cast<uint64_t>(j) * W + i + 1);
