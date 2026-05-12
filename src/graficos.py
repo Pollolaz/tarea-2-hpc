@@ -72,7 +72,7 @@ def fig_scaling():
             ax = axes[0]
             ax.plot(THREADS, T_omp,   "o-",  color="steelblue", label="OpenMP")
             ax.plot(THREADS, T_numba, "s--", color="darkorange", label="Numba")
-            ax.axhline(Ts, color="gray", linestyle=":", linewidth=1.5, label=f"Serial ({Ts:.1f}s)")
+            ax.axhline(Ts, color="gray", linestyle=":", linewidth=1.5, label=f"Serial ({Ts:.3f}s)")
             ax.plot(THREADS, [Ts/p for p in THREADS], "k--", linewidth=1, label="Ideal")
             ax.set(xlabel="Threads p", ylabel="Tiempo (s)", title="T(p)")
             ax.set_xticks(THREADS)
@@ -136,7 +136,7 @@ def fig_scheduling():
             for j in range(mat.shape[1]):
                 v = mat[i, j]
                 if not np.isnan(v):
-                    ax.text(j, i, f"{v:.1f}", ha="center", va="center", fontsize=8,
+                    ax.text(j, i, f"{v:.3f}", ha="center", va="center", fontsize=8,
                             color="black" if v > mat.max() * 0.5 else "white")
 
         plt.tight_layout()

@@ -1,0 +1,30 @@
+{
+  "scene.txt": {
+    "small": {
+      "serial_rt": 0.0618248,
+      "serial_pt": 3.94013
+    },
+    "medium": {
+      "serial_rt": 0.971559,
+      "serial_pt": 60.511
+    },
+    "large": {
+      "serial_rt": 3.81826,
+      "serial_pt": 476.249
+    }
+  },
+  "scene_many.txt": {
+    "small": {
+      "serial_rt": 0.200106,
+      "serial_pt": 5.92215
+    },
+    "medium": {
+      "serial_rt": 3.12774,
+      "serial_pt": 92.3548
+    },
+    "large": {
+      "serial_rt": 12.617,
+      "serial_pt": 738.645
+    }
+  }
+}
